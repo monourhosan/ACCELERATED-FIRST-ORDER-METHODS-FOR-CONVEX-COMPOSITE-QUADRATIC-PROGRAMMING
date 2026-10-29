@@ -129,29 +129,39 @@ def run_benchmark(data_dir: str, instances: list, max_iter: int = 3000, tol: flo
     return results
 
 
-if __name__ == "__main__":
-    default_dir = r"D:\paper project\T1\Data\maros_meszaros_qpbenchmark-main\data"
-    
-    # Representative test suite spanning diverse real-world problem sizes and structures
-    selected_instances = [
-        "HS21",
-        "HS35",
-        "HS51",
-        "HS52",
-        "HS76",
-        "GENHS28",
-        "ZECEVIC2",
-        "TAME",
-        "S268",
-        "DUAL1",
-        "DUAL2",
-        "DUAL3",
-        "DUAL4",
-        "CVXQP1_S",
-        "CVXQP2_S",
-        "CVXQP3_S",
-        "QSCAGR7",
-        "QSCSD1"
-    ]
+DEFAULT_DATA_DIR = r"D:\paper project\T1\Data\maros_meszaros_qpbenchmark-main\data"
 
-    run_benchmark(default_dir, selected_instances, max_iter=3000, tol=1e-4, restart_freq=32)
+SELECTED_INSTANCES = [
+    "HS21",
+    "HS35",
+    "HS51",
+    "HS52",
+    "HS76",
+    "GENHS28",
+    "ZECEVIC2",
+    "TAME",
+    "S268",
+    "DUAL1",
+    "DUAL2",
+    "DUAL3",
+    "DUAL4",
+    "CVXQP1_S",
+    "CVXQP2_S",
+    "CVXQP3_S",
+    "QSCAGR7",
+    "QSCSD1"
+]
+
+
+if __name__ == "__main__":
+    results = run_benchmark(DEFAULT_DATA_DIR, SELECTED_INSTANCES, max_iter=3000, tol=1e-4, restart_freq=32)
+    
+    # Save results to CSV
+    import csv
+    with open("benchmark_results.csv", "w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["name", "n", "m_lin", "status", "iters", "runtime", "kkt_res", "obj"])
+        writer.writeheader()
+        for r in results:
+            writer.writerow(r)
+    print("Saved benchmark results to benchmark_results.csv")
+

@@ -18,8 +18,10 @@ ENV/
 .DS_Store
 Thumbs.db
 
-# Large benchmark data
-Data/
-*.mat
+# Ignore raw legacy SIF files (large 220MB Fortran files)
 *.SIF
+cuteclass
+updategzip
+maros-meszaros-mirror-master/
+
 

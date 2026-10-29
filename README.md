@@ -13,9 +13,12 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 
 ```
 ├── 8892.pdf                 # Reference doctoral thesis on CCQP & HPR methods
+├── RESEARCH_REPORT.md       # Comprehensive mathematical & algorithmic research report
 ├── hpr_qp.py                # Accelerated First-Order Solvers for CCQP (Primal & Dual HPR-QP)
 ├── test_hpr_qp.py           # Unit tests reproducing paper examples (Ex 5.1 & 5.2)
 ├── benchmark_maros_meszaros.py # Real-world benchmark runner on Maros-Meszaros QP dataset
+├── benchmark_results.csv    # Evaluated real-world benchmark metrics and KKT residuals
+├── Data/                    # Maros-Meszaros benchmark dataset (.mat problem instances)
 ├── transformer_scratch.py   # Complete Transformer from scratch in pure PyTorch
 ├── train_copy_task.py       # Autoregressive sequence copy task benchmark & training loop
 ├── README.md                # Project documentation

@@ -1,0 +1,50 @@
+# SPDX-License-Identifier: Apache-2.0
+
+"""Dense subset of the Maros-Meszaros test set."""
+
+import os
+from typing import Iterator
+
+from maros_meszaros import MarosMeszaros
+
+import qpbenchmark
+from qpbenchmark.benchmark import main
+
+
+class MarosMeszarosDense(MarosMeszaros):
+    """Subset of Maros-Meszaros restricted to smaller dense problems."""
+
+    @property
+    def description(self) -> str:
+        """Description of the test set."""
+        return (
+            "Subset of the Maros-Meszaros test set "
+            "restricted to smaller dense problems."
+        )
+
+    @property
+    def title(self) -> str:
+        """Test set title."""
+        return "Maros-Meszaros dense subset"
+
+    @property
+    def sparse_only(self) -> bool:
+        """Test set is dense."""
+        return False
+
+    def __iter__(self) -> Iterator[qpbenchmark.Problem]:
+        """Iterate on test set problems."""
+        for problem in super().__iter__():
+            nb_variables = problem.P.shape[0]
+            nb_constraints = self.count_constraints(problem)
+            if nb_variables <= 1000 and nb_constraints <= 1000:
+                yield problem.to_dense()
+
+
+if __name__ == "__main__":
+    test_set_path = os.path.abspath(__file__)
+    test_set_dir = os.path.dirname(test_set_path)
+    main(
+        test_set_path=test_set_path,
+        results_path=f"{test_set_dir}/results/maros_meszaros_dense.parquet",
+    )
