@@ -24,4 +24,15 @@ cuteclass
 updategzip
 maros-meszaros-mirror-master/
 
+# Compiled native binaries & build artifacts
+*.exe
+*.obj
+*.o
+*.dll
+*.pdb
+*.ilk
+target/
+build/
+bin/
+
 
