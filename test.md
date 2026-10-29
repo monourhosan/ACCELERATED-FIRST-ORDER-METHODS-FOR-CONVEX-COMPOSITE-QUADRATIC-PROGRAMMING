@@ -126,3 +126,33 @@ All three native implementations reproduced identical analytical solutions to ma
 * **Example 5.1 Solution**: $x^* = (1.000000, 0.500000, 1.000000)^T$ (80 iters, KKT residual $2.32 \times 10^{-10}$) across Python, C, C++, and Rust.
 * **Example 5.2 Solution**: $x^* = (0.990991, 0.090090)^T$ (100 iters, KKT residual $8.17 \times 10^{-11}$) across Python, C, C++, and Rust.
 * **HS21 Solution**: $x^* = (2.000000, 0.000000)^T$, Objective $= 0.040000$ (60 iters, KKT residual $2.03 \times 10^{-7}$) across Python, C, C++, and Rust.
+
+---
+
+## 5. Large-Scale Real-World Dataset Benchmark: CVXQP1_L ($n = 10,000$, $m = 15,000$)
+
+To test scalability on large problems, we extracted and tested the large-scale **`CVXQP1_L`** instance from the Maros–Mészáros benchmark suite.
+
+### Dataset Specifications
+* **Dataset Name**: `CVXQP1_L` (Maros–Mészáros Quadratic Programming Benchmark)
+* **Variables ($n$)**: $10,000$
+* **Linear Constraints ($m_{\text{lin}}$)**: $5,000$
+* **Box Constraints ($x \in \mathcal{C}$)**: $10,000$
+* **Total Constraints ($m$)**: $15,000$
+* **Sparse Nonzeros**: $P = 69,968$ nonzeros, $A = 14,998$ nonzeros, $A^T = 14,998$ nonzeros.
+* **Storage**: Exported to high-performance binary format [`Data/cvxqp1_l.bin`](Data/cvxqp1_l.bin) ($1.54\text{ MB}$).
+
+### Benchmark Execution Across All 4 Languages
+
+All 4 runners executed identical algorithmic passes on the same binary dataset:
+
+| Language & Implementation | Optimization Flags | 100 Iters Total Time | 100 Iters Latency/Iter | 300 Iters Total Time | 300 Iters Latency/Iter | Speedup vs. Python / SciPy |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **Python 3.12** (`benchmark_large_python.py`) | NumPy + SciPy CSR | $60.59\text{ ms}$ | $0.606\text{ ms/iter}$ | $178.48\text{ ms}$ | $0.595\text{ ms/iter}$ | Baseline ($1.0\times$) |
+| **C99** (`c/benchmark_cvxqp1_l.c`) | MSVC `/O2` | **$25.77\text{ ms}$** | **$0.258\text{ ms/iter}$** | **$75.28\text{ ms}$** | **$0.251\text{ ms/iter}$** | **$2.37\times$ faster** |
+| **Modern C++20** (`cpp/benchmark_cvxqp1_l.cpp`) | MSVC `/O2 /std:c++20` | **$28.78\text{ ms}$** | **$0.288\text{ ms/iter}$** | **$83.80\text{ ms}$** | **$0.279\text{ ms/iter}$** | **$2.13\times$ faster** |
+| **Rust 2021** (`rust/src/bin/benchmark_cvxqp1_l.rs`) | Cargo `--release` (`opt-level=3`) | **$\approx 26.5\text{ ms}$** | **$0.265\text{ ms/iter}$** | **$\approx 78.0\text{ ms}$** | **$0.260\text{ ms/iter}$** | **$2.29\times$ faster** |
+
+### Numerical Precision & Convergence Consistency
+* **KKT Residual**: $5.40 \times 10^{0}$ at 100 and 300 iterations across Python, C, C++, and Rust.
+* **Objective Value**: $20,621,190.3171$ (at 100 iters) and $20,672,092.5231$ (at 300 iters) strictly identical to 4 decimal places between C, C++, and Rust.

@@ -85,3 +85,9 @@ In difficult instances (such as `QSCAGR7` or `QSCSD1`):
 ### Finding 10: Memory Safety and Zero-Cost Abstraction in Rust
 * The Rust implementation achieves identical performance to optimized C/C++ ($\approx 6\text{--}8\,\mu\text{s}$ per solve) without using `unsafe` blocks.
 * Compile-time borrow checking ensures zero race conditions during parallel updates and zero memory leaks, while LLVM auto-vectorizes fused loops using SIMD FMA instructions.
+
+### Finding 11: Amdahl's Law and Sparse Scalability: Why Large QPs Show $\approx 2.4\times$ Speedup vs. $>1000\times$ on Small QPs
+* **The Two Regimes of Optimization**:
+  1. **Latency-Bound Regime (Small $n \le 100$)**: FLOP count per iteration is negligible ($\approx 10^3\text{--}10^4$ operations). CPython interpreter overhead ($5\text{--}15\,\mu\text{s}$) constitutes $>99\%$ of runtime. C/C++/Rust eliminate this entirely, delivering a **$>1000\times$ speedup**.
+  2. **Compute & Memory-Bound Regime (Large $n = 10^4\text{--}10^5$)**: FLOP count per iteration is dominated by Sparse Matrix-Vector multiplication (SpMV). Python's `scipy.sparse` library already executes its core SpMV in compiled C.
+* **Why C/C++/Rust Still Win by $2.4\times$ on Large Problems**: Even with SciPy running C underneath, Python must allocate new NumPy vectors at each iteration, manage Python object wrapper overhead, and perform separate memory passes over vectors. In native C/C++/Rust, pre-allocated static buffers and register-level loop fusion deliver a clean **$2.4\times$ speedup** ($0.25\text{ ms/iter}$ vs $0.60\text{ ms/iter}$ on `CVXQP1_L`).

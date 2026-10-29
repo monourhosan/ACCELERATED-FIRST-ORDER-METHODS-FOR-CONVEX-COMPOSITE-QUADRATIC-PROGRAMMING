@@ -33,6 +33,6 @@ maros-meszaros-mirror-master/
 *.ilk
 target/
 build/
-bin/
+/bin/
 
 

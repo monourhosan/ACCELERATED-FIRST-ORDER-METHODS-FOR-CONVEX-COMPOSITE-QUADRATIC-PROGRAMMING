@@ -19,17 +19,23 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ├── hpr_qp.py                # Accelerated First-Order Solvers for CCQP (Primal & Dual HPR-QP in Python)
 ├── test_hpr_qp.py           # Unit tests reproducing paper examples (Ex 5.1 & 5.2)
 ├── benchmark_maros_meszaros.py # Real-world benchmark runner on Maros-Meszaros QP dataset
+├── benchmark_large_python.py # Large-scale CVXQP1_L benchmark in Python
+├── export_large_dataset.py  # Binary exporter for large-scale cross-language datasets
 ├── benchmark_results.csv    # Evaluated real-world benchmark metrics and KKT residuals
-├── Data/                    # Maros-Meszaros benchmark dataset (.mat problem instances)
+├── Data/                    # Maros-Meszaros dataset (.mat and fast binary instances)
+│   └── cvxqp1_l.bin         # Binary dataset for CVXQP1_L (n=10,000, m=15,000)
 ├── c/                       # Ultra-low-latency C99 implementation of HPR-QP
 │   ├── hpr_qp.h             # C API header with zero-allocation buffers
-│   └── hpr_qp.c             # High-performance C solver and verification suite
+│   ├── hpr_qp.c             # High-performance C solver and verification suite
+│   └── benchmark_cvxqp1_l.c # High-throughput C benchmark for CVXQP1_L (n=10,000)
 ├── cpp/                     # Modern C++20 implementation of HPR-QP
 │   ├── hpr_qp.hpp           # Header-only modern C++ solver class with RAII
-│   └── hpr_qp.cpp           # C++ verification and benchmark testbed
+│   ├── hpr_qp.cpp           # C++ verification and benchmark testbed
+│   └── benchmark_cvxqp1_l.cpp # C++20 benchmark for CVXQP1_L (n=10,000)
 ├── rust/                    # Memory-safe, zero-cost abstraction Rust crate
 │   ├── Cargo.toml           # Rust package manifest
-│   └── src/main.rs          # Pure Rust HPR-QP solver and benchmarks
+│   ├── src/main.rs          # Pure Rust HPR-QP solver and benchmarks
+│   └── src/bin/benchmark_cvxqp1_l.rs # Fast CSR Rust runner for CVXQP1_L
 ├── transformer_scratch.py   # Complete Transformer from scratch in pure PyTorch
 ├── train_copy_task.py       # Autoregressive sequence copy task benchmark & training loop
 ├── README.md                # Project documentation
@@ -187,7 +193,30 @@ Overall Accuracy: 5/5 (100.0%)
 | **Example 5.1** (Singular $Q$) | $n=3, m=0$ | $9.85\text{ ms}$ | **$0.012\text{ ms}$** | **$0.0117\text{ ms}$** | **$0.011\text{ ms}$** | **$\approx 890\times$** |
 | **Example 5.2** (Ill-conditioned $Q$) | $n=2, m=0$ | $7.42\text{ ms}$ | **$0.007\text{ ms}$** | **$0.0066\text{ ms}$** | **$0.006\text{ ms}$** | **$\approx 1120\times$** |
 | **HS21** (Constrained QP) | $n=2, m=1$ | $9.00\text{ ms}$ | **$0.009\text{ ms}$** | **$0.0084\text{ ms}$** | **$0.008\text{ ms}$** | **$\approx 1070\times$** |
-| **Large Sparse QP** ($n=10^5$) | $n=10^5$ | $1.42\text{ s}$ | **$0.31\text{ s}$** | **$0.29\text{ s}$** | **$0.28\text{ s}$** | **$\approx 5\times$** (CPU Single-Core) |
+| **CVXQP1_L** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | **$25.77\text{ ms}$** | **$28.78\text{ ms}$** | **$\approx 26.5\text{ ms}$** | **$\approx 2.4\times$** |
+| **CVXQP1_L** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$75.28\text{ ms}$** | **$83.80\text{ ms}$** | **$\approx 78.0\text{ ms}$** | **$\approx 2.4\times$** |
+
+### Running the Large-Scale CVXQP1_L Benchmark ($n=10,000, m=15,000$)
+
+1. **Python Benchmark**:
+   ```bash
+   python benchmark_large_python.py
+   ```
+2. **C Benchmark (MSVC)**:
+   ```cmd
+   cl /O2 c/benchmark_cvxqp1_l.c /Fe:c/benchmark_c.exe
+   c\benchmark_c.exe
+   ```
+3. **C++20 Benchmark (MSVC)**:
+   ```cmd
+   cl /O2 /std:c++20 /EHsc cpp/benchmark_cvxqp1_l.cpp /Fe:cpp/benchmark_cpp.exe
+   cpp\benchmark_cpp.exe
+   ```
+4. **Rust Benchmark (Cargo)**:
+   ```bash
+   cd rust
+   cargo run --release --bin benchmark_cvxqp1_l
+   ```
 
 ---
 
