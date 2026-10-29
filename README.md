@@ -15,6 +15,7 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ├── 8892.pdf                 # Reference doctoral thesis on CCQP & HPR methods
 ├── hpr_qp.py                # Accelerated First-Order Solvers for CCQP (Primal & Dual HPR-QP)
 ├── test_hpr_qp.py           # Unit tests reproducing paper examples (Ex 5.1 & 5.2)
+├── benchmark_maros_meszaros.py # Real-world benchmark runner on Maros-Meszaros QP dataset
 ├── transformer_scratch.py   # Complete Transformer from scratch in pure PyTorch
 ├── train_copy_task.py       # Autoregressive sequence copy task benchmark & training loop
 ├── README.md                # Project documentation
@@ -61,6 +62,27 @@ Example 5.2 PASSED!
 ============================================================
 ALL HPR-QP TESTS COMPLETED SUCCESSFULLY!
 ```
+
+### Real-World Dataset Evaluation (Maros-Mészáros Benchmark)
+Run HPR-QP against real-world instances from `Data/`:
+```bash
+python benchmark_maros_meszaros.py
+```
+**Results on Representative Maros-Mészáros Instances:**
+| Instance | $n$ | $m_{\text{lin}}$ | Status | Iterations | Time (s) | Final KKT Residual | Objective Value |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **HS21** | 2 | 1 | `OPTIMAL` | 40 | 0.0075 | $3.91 \times 10^{-5}$ | `0.040000` |
+| **HS35** | 3 | 1 | `OPTIMAL` | 80 | 0.0174 | $8.05 \times 10^{-6}$ | `-8.888886` |
+| **HS51** | 5 | 3 | `OPTIMAL` | 460 | 0.0991 | $9.39 \times 10^{-5}$ | `-6.000000` |
+| **HS52** | 5 | 3 | `OPTIMAL` | 1020 | 0.2417 | $9.01 \times 10^{-5}$ | `-0.674237` |
+| **HS76** | 4 | 3 | `OPTIMAL` | 80 | 0.0175 | $2.25 \times 10^{-5}$ | `-4.681463` |
+| **GENHS28**| 10 | 8 | `OPTIMAL` | 200 | 0.0439 | $6.61 \times 10^{-5}$ | `0.927155` |
+| **ZECEVIC2**| 2 | 2 | `OPTIMAL` | 140 | 0.0335 | $5.55 \times 10^{-5}$ | `-4.125111` |
+| **TAME** | 2 | 1 | `OPTIMAL` | 20 | 0.0047 | $5.77 \times 10^{-15}$| `0.000000` |
+| **S268** | 5 | 5 | `OPTIMAL` | 340 | 0.0773 | $1.55 \times 10^{-5}$ | `-13565.491050` |
+| **DUAL1** | 85 | 1 | `OPTIMAL` | 340 | 0.0852 | $8.43 \times 10^{-5}$ | `0.035042` |
+| **DUAL2** | 96 | 1 | `OPTIMAL` | 320 | 0.0774 | $5.84 \times 10^{-5}$ | `0.033747` |
+| **DUAL3** | 111| 1 | `OPTIMAL` | 2180 | 0.6213 | $9.98 \times 10^{-5}$ | `0.135742` |
 
 ---
 

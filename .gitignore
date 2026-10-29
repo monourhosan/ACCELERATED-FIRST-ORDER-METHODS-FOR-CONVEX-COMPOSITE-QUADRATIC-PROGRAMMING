@@ -17,3 +17,9 @@ ENV/
 # OS generated files
 .DS_Store
 Thumbs.db
+
+# Large benchmark data
+Data/
+*.mat
+*.SIF
+
