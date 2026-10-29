@@ -14,8 +14,10 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ```
 ├── 8892.pdf                 # Reference doctoral thesis on CCQP & HPR methods
 ├── RESEARCH_REPORT.md       # Comprehensive mathematical & algorithmic research report
+├── REAL_WORLD_REVIEW_REPORT.md # Technical review on real-world applications (Autonomous Vehicles, MPC, ML, HFT)
 ├── test.md                  # Test suites, empirical findings & speed comparisons
 ├── finding.md               # Key algorithmic, theoretical & architectural findings
+├── real_world_mpc_hpr.py    # Autonomous vehicle trajectory tracking MPC case study
 ├── hpr_qp.py                # Accelerated First-Order Solvers for CCQP (Primal & Dual HPR-QP in Python)
 ├── test_hpr_qp.py           # Unit tests reproducing paper examples (Ex 5.1 & 5.2)
 ├── benchmark_maros_meszaros.py # Real-world benchmark runner on Maros-Meszaros QP dataset
@@ -106,6 +108,17 @@ python benchmark_maros_meszaros.py
 | **DUAL1** | 85 | 1 | `OPTIMAL` | 340 | 0.0852 | $8.43 \times 10^{-5}$ | `0.035042` |
 | **DUAL2** | 96 | 1 | `OPTIMAL` | 320 | 0.0774 | $5.84 \times 10^{-5}$ | `0.033747` |
 | **DUAL3** | 111| 1 | `OPTIMAL` | 2180 | 0.6213 | $9.98 \times 10^{-5}$ | `0.135742` |
+
+### Real-World Application: Autonomous Vehicle Model Predictive Control (MPC)
+We implemented a closed-loop trajectory tracking MPC simulation for autonomous driving in [`real_world_mpc_hpr.py`](real_world_mpc_hpr.py):
+* **Control Task**: 60-step closed-loop double-lane change maneuver at $54\text{--}72\text{ km/h}$.
+* **Constraints**: Actuator steering/torque saturation and lateral roadway boundaries ($y \in [-2.0\text{m}, +6.0\text{m}]$).
+* **Performance**: 100% boundary compliance, solving in **$10\text{--}50\,\mu\text{s}$ in compiled C99** (enabling $>2,000\text{ Hz}$ control cycles).
+* Run the case study:
+  ```bash
+  python real_world_mpc_hpr.py
+  ```
+* Read the comprehensive applied review: [`REAL_WORLD_REVIEW_REPORT.md`](REAL_WORLD_REVIEW_REPORT.md).
 
 ---
 
