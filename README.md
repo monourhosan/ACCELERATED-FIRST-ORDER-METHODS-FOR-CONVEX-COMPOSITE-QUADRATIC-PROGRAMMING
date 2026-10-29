@@ -27,15 +27,18 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ├── c/                       # Ultra-low-latency C99 implementation of HPR-QP
 │   ├── hpr_qp.h             # C API header with zero-allocation buffers
 │   ├── hpr_qp.c             # High-performance C solver and verification suite
-│   └── benchmark_cvxqp1_l.c # High-throughput C benchmark for CVXQP1_L (n=10,000)
+│   ├── benchmark_cvxqp1_l.c # High-throughput C benchmark for CVXQP1_L (n=10,000)
+│   └── benchmark_fast_c.c   # Accelerated C solver (4-way SIMD + OpenMP 8-thread)
 ├── cpp/                     # Modern C++20 implementation of HPR-QP
 │   ├── hpr_qp.hpp           # Header-only modern C++ solver class with RAII
 │   ├── hpr_qp.cpp           # C++ verification and benchmark testbed
-│   └── benchmark_cvxqp1_l.cpp # C++20 benchmark for CVXQP1_L (n=10,000)
+│   ├── benchmark_cvxqp1_l.cpp # C++20 benchmark for CVXQP1_L (n=10,000)
+│   └── benchmark_fast_cpp.cpp # Accelerated C++20 solver (SIMD + OpenMP 8-thread)
 ├── rust/                    # Memory-safe, zero-cost abstraction Rust crate
 │   ├── Cargo.toml           # Rust package manifest
 │   ├── src/main.rs          # Pure Rust HPR-QP solver and benchmarks
-│   └── src/bin/benchmark_cvxqp1_l.rs # Fast CSR Rust runner for CVXQP1_L
+│   ├── src/bin/benchmark_cvxqp1_l.rs # Fast CSR Rust runner for CVXQP1_L
+│   └── src/bin/benchmark_fast_rust.rs # Accelerated 4-way unrolled Rust solver
 ├── transformer_scratch.py   # Complete Transformer from scratch in pure PyTorch
 ├── train_copy_task.py       # Autoregressive sequence copy task benchmark & training loop
 ├── README.md                # Project documentation
@@ -195,8 +198,28 @@ Overall Accuracy: 5/5 (100.0%)
 | **HS21** (Constrained QP) | $n=2, m=1$ | $9.00\text{ ms}$ | **$0.009\text{ ms}$** | **$0.0084\text{ ms}$** | **$0.008\text{ ms}$** | **$\approx 1070\times$** |
 | **CVXQP1_L** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | **$25.77\text{ ms}$** | **$28.78\text{ ms}$** | **$\approx 26.5\text{ ms}$** | **$\approx 2.4\times$** |
 | **CVXQP1_L** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$75.28\text{ ms}$** | **$83.80\text{ ms}$** | **$\approx 78.0\text{ ms}$** | **$\approx 2.4\times$** |
+| **CVXQP1_L Accelerated** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | **$12.99\text{ ms}$** | **$14.74\text{ ms}$** | **$\approx 14.0\text{ ms}$** | **$\approx 4.7\times$** |
+| **CVXQP1_L Accelerated** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$52.92\text{ ms}$** | **$63.17\text{ ms}$** | **$\approx 58.0\text{ ms}$** | **$\approx 3.4\times$** |
 
-### Running the Large-Scale CVXQP1_L Benchmark ($n=10,000, m=15,000$)
+### Running the Accelerated Algorithm Benchmarks (SIMD + OpenMP 8-Threads)
+
+1. **Accelerated C Benchmark (MSVC OpenMP)**:
+   ```cmd
+   cl /O2 /openmp /MD c/benchmark_fast_c.c /Fe:c/benchmark_fast.exe
+   c\benchmark_fast.exe
+   ```
+2. **Accelerated C++20 Benchmark (MSVC OpenMP)**:
+   ```cmd
+   cl /O2 /std:c++20 /openmp /EHsc /MD cpp/benchmark_fast_cpp.cpp /Fe:cpp/benchmark_fast_cpp.exe
+   cpp\benchmark_fast_cpp.exe
+   ```
+3. **Accelerated Rust Benchmark**:
+   ```bash
+   cd rust
+   cargo run --release --bin benchmark_fast_rust
+   ```
+
+### Running the Large-Scale CVXQP1_L Baseline Benchmark ($n=10,000, m=15,000$)
 
 1. **Python Benchmark**:
    ```bash
