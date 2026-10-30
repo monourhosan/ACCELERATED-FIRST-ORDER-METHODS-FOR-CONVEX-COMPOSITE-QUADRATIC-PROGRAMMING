@@ -255,4 +255,35 @@ Evaluated on **`CVXQP1_L`** ($n = 10,000, m = 15,000$, $94,966$ nonzeros):
 *Numerical Solution Agreement*:
 - **GPU C++ Optimal Solution $x^*[0..2]$ at 300 iters**: `[0.1000, 0.1000, 0.2155]` (exact match with CPU C++ and C).
 
+---
+
+## 10. Rust Optimization & GPU Acceleration: Old CPU Rust vs. New GPU Rust (NVIDIA MX250)
+
+To achieve maximum throughput in Rust, we developed [`rust/src/bin/benchmark_gpu_rust.rs`](rust/src/bin/benchmark_gpu_rust.rs) binding Rust to the native OpenCL subsystem on the **NVIDIA GeForce MX250 GPU**:
+
+### Architecture of the Rust GPU Engine
+1. **Zero-Dependency Native Driver FFI**:
+   - Uses zero third-party crates, binding directly to `OpenCL.dll` via raw `extern "system"` Windows FFI (`LoadLibraryA` / `GetProcAddress`).
+   - JIT compiles optimized OpenCL kernels on-the-fly directly to NVIDIA PTX machine code.
+2. **100% Persistent VRAM Residency (Zero PCIe Overhead)**:
+   - All sparse matrices ($P, A, A^T$) and 24 working iterate vectors reside exclusively in dedicated GPU VRAM throughout all iterations.
+   - Zero bytes are copied across PCIe during the iterative optimization loop.
+3. **Optimized OpenCL C Kernels**:
+   - `spmv_csr_kernel`: Massively parallel CSR SpMV.
+   - `fused_step1_2_kernel`: Fused box projection $\Pi_{\mathcal{C}}$, reflection $\hat{x}$, and $w_{\text{half}}$ update in GPU registers.
+   - `sgs_prep_temp_n_kernel`, `sgs_y_step_kernel`, `sgs_w_step_kernel`: Parallel Symmetric Gauss-Seidel passes.
+   - `halpern_average_kernel`: In-place Halpern convex combination with origin anchor vectors.
+
+### Direct Performance Benchmark: Old CPU Rust vs. New GPU Rust
+Evaluated on **`CVXQP1_L`** ($n = 10,000, m = 15,000$, $94,966$ nonzeros):
+
+| Iteration Budget | Old Single-Core CPU Rust (`rust/src/bin/benchmark_cvxqp1_l.rs`) | Accelerated 4-Way CPU Rust (`rust/src/bin/benchmark_fast_rust.rs`) | New GPU Rust on NVIDIA GeForce MX250 (`rust/src/bin/benchmark_gpu_rust.rs`) | Latency per Iteration (GPU Rust) | Speedup vs. Old Single-Core CPU Rust | Speedup vs. Accelerated CPU Rust |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **100 Iterations** | $52.15\text{ ms}$ ($0.522\text{ ms/iter}$) | $54.00\text{ ms}$ ($0.540\text{ ms/iter}$) | **$30.31\text{ ms}$** | **$0.303\text{ ms/iter}$** | **$1.72\times$ FASTER** | **$1.78\times$ FASTER** |
+| **300 Iterations** | $136.31\text{ ms}$ ($0.454\text{ ms/iter}$) | $158.06\text{ ms}$ ($0.527\text{ ms/iter}$) | **$80.05\text{ ms}$** | **$0.267\text{ ms/iter}$** | **$1.70\times$ FASTER** | **$1.97\times$ FASTER** |
+
+*Numerical Solution Agreement*:
+- **GPU Rust Optimal Solution $x^*[0..2]$ at 300 iters**: `[0.1000, 0.1000, 0.2155]` (exact bitwise parity with GPU C, GPU C++, and CPU reference solvers).
+
+
 

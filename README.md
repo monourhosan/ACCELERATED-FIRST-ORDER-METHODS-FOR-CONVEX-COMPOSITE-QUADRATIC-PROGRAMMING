@@ -46,7 +46,8 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 │   ├── Cargo.toml           # Rust package manifest
 │   ├── src/main.rs          # Pure Rust HPR-QP solver and benchmarks
 │   ├── src/bin/benchmark_cvxqp1_l.rs # Fast CSR Rust runner for CVXQP1_L
-│   └── src/bin/benchmark_fast_rust.rs # Accelerated 4-way unrolled Rust solver
+│   ├── src/bin/benchmark_fast_rust.rs # Accelerated 4-way unrolled Rust solver
+│   └── src/bin/benchmark_gpu_rust.rs # GPU-Accelerated Rust solver (OpenCL, NVIDIA GeForce MX250)
 ├── transformer_scratch.py   # Complete Transformer from scratch in pure PyTorch
 ├── train_copy_task.py       # Autoregressive sequence copy task benchmark & training loop
 ├── README.md                # Project documentation
@@ -223,24 +224,30 @@ Overall Accuracy: 5/5 (100.0%)
 | **CVXQP1_L GPU C (NVIDIA MX250)** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$81.16\text{ ms}$** | — | — | **$\approx 3.2\times$ vs Old C** |
 | **CVXQP1_L GPU C++20 (NVIDIA MX250)** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | — | **$29.78\text{ ms}$** | — | **$\approx 1.5\times$ vs Old C++** |
 | **CVXQP1_L GPU C++20 (NVIDIA MX250)** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | — | **$80.45\text{ ms}$** | — | **$\approx 1.8\times$ vs Old C++** |
+| **CVXQP1_L GPU Rust (NVIDIA MX250)** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | — | — | **$30.31\text{ ms}$** | **$\approx 1.7\times$ vs Old Rust** |
+| **CVXQP1_L GPU Rust (NVIDIA MX250)** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | — | — | **$80.05\text{ ms}$** | **$\approx 1.7\times$ vs Old Rust** |
 
 ### Running the GPU & Accelerated Solvers
 
-1. **New GPU C++20 Solver (OpenCL RAII on NVIDIA MX250 / Zero-PCIe Transfers)**:
+1. **New GPU Rust Solver (OpenCL on NVIDIA MX250 / Zero-PCIe Transfers)**:
+   ```bash
+   cargo run --manifest-path rust/Cargo.toml --release --bin benchmark_gpu_rust
+   ```
+2. **New GPU C++20 Solver (OpenCL RAII on NVIDIA MX250 / Zero-PCIe Transfers)**:
    ```cmd
    cl /O2 /std:c++20 /EHsc cpp/benchmark_gpu_cpp.cpp /Fe:cpp/benchmark_gpu_cpp.exe
    cpp\benchmark_gpu_cpp.exe
    ```
-2. **New GPU C Solver (OpenCL on NVIDIA MX250 / Zero-PCIe Transfers)**:
+3. **New GPU C Solver (OpenCL on NVIDIA MX250 / Zero-PCIe Transfers)**:
    ```cmd
    cl /O2 c/benchmark_gpu_c.c /Fe:c/benchmark_gpu_c.exe
    c\benchmark_gpu_c.exe
    ```
-3. **New Unified Accelerated Python Engine (4.6x - 5.0x Faster)**:
+4. **New Unified Accelerated Python Engine (4.6x - 5.0x Faster)**:
    ```bash
    python test_accelerated_python.py
    ```
-4. **GPU PyTorch vs. Old CPU Python Benchmark**:
+5. **GPU PyTorch vs. Old CPU Python Benchmark**:
    ```bash
    python benchmark_gpu_vs_cpu.py
    ```
