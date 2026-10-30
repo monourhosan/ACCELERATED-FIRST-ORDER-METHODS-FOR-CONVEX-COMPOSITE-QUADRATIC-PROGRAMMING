@@ -15,6 +15,7 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ├── 8892.pdf                 # Reference doctoral thesis on CCQP & HPR methods
 ├── RESEARCH_REPORT.md       # Comprehensive mathematical & algorithmic research report
 ├── REAL_WORLD_REVIEW_REPORT.md # Technical review on real-world applications (Autonomous Vehicles, MPC, ML, HFT)
+├── VISUAL_GUIDE.md          # Comprehensive visual guide: algorithm mechanics & CPU vs GPU language comparisons
 ├── test.md                  # Test suites, empirical findings & speed comparisons
 ├── finding.md               # Key algorithmic, theoretical & architectural findings
 ├── real_world_mpc_hpr.py    # Autonomous vehicle trajectory tracking MPC case study
@@ -229,7 +230,13 @@ Overall Accuracy: 5/5 (100.0%)
 
 ### Performance Graphs & Visualizations
 
+> For a complete visual walkthrough of algorithm mechanics, mathematical formulations, and CPU vs GPU memory bottlenecks, see the dedicated [**Visual Guide (VISUAL_GUIDE.md)**](VISUAL_GUIDE.md).
+
+![HPR-QP Algorithm Computational Pipeline](assets/algorithm_architecture.png)
+
 ![Performance Comparison on CVXQP1_L](assets/performance_comparison.png)
+
+![CPU vs GPU Performance Matrix](assets/cpu_vs_gpu_performance_matrix.png)
 
 ![Small Problems Latency Comparison](assets/latency_small_problems.png)
 
