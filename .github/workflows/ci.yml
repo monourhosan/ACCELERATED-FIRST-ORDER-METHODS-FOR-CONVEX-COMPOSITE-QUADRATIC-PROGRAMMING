@@ -1,0 +1,55 @@
+name: HPR-QP Multi-Language CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  python-tests:
+    name: Python Test Suite & Benchmarks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install numpy scipy torch matplotlib
+      - name: Run HPR-QP synthetic tests (Examples 5.1 & 5.2)
+        run: python test_hpr_qp.py
+      - name: Run Transformer Copy Task verification
+        run: python train_copy_task.py
+
+  c-cpp-build:
+    name: C99 and C++20 Build & Test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install build essentials
+        run: sudo apt-get update && sudo apt-get install -y gcc g++ make cmake libomp-dev ocl-icd-opencl-dev
+      - name: Compile and run C solver
+        run: |
+          gcc -O3 -DHPR_QP_STANDALONE c/hpr_qp.c -o c/test_c_hpr -lm
+          ./c/test_c_hpr
+      - name: Compile and run C++20 solver
+        run: |
+          g++ -O3 -std=c++20 -DHPR_QP_CPP_STANDALONE cpp/hpr_qp.cpp -o cpp/test_cpp_hpr
+          ./cpp/test_cpp_hpr
+
+  rust-test:
+    name: Rust Build & Verification
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Check and run Rust tests
+        run: |
+          cd rust
+          cargo check --verbose
+          cargo run --release
