@@ -14,12 +14,19 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ```
 ├── 8892.pdf                 # Reference doctoral thesis on CCQP & HPR methods
 ├── RESEARCH_REPORT.md       # Comprehensive mathematical & algorithmic research report
-├── REAL_WORLD_REVIEW_REPORT.md # Technical review on real-world applications (Autonomous Vehicles, MPC, ML, HFT)
-├── VISUAL_GUIDE.md          # Comprehensive visual guide: algorithm mechanics & CPU vs GPU language comparisons
-├── test.md                  # Test suites, empirical findings & speed comparisons
-├── finding.md               # Key algorithmic, theoretical & architectural findings
-├── real_world_mpc_hpr.py    # Autonomous vehicle trajectory tracking MPC case study
-├── hpr_qp.py                # Accelerated First-Order Solvers for CCQP (Primal & Dual HPR-QP in Python)
+├── MATHEMATICAL_DERIVATION.md # Rigorous mathematical derivations & operator proofs
+├── REAL_WORLD_REVIEW_REPORT.md # Technical review on real-world applications (AV, MPC, ML, HFT)
+├── VISUAL_GUIDE.md          # Comprehensive visual guide: algorithm mechanics & CPU vs GPU
+├── CONTRIBUTING.md          # Developer setup, coding standards, and PR guidelines
+├── CITATION.cff             # Academic citation metadata
+├── LICENSE                  # MIT License
+├── Dockerfile               # Multi-stage Docker container build
+├── docker-compose.yml       # Reproducible containerized execution
+├── run_all_benchmarks.sh    # Cross-platform Bash automated benchmark runner
+├── run_all_benchmarks.ps1   # Windows PowerShell automated benchmark runner
+├── cli.py                   # Unified interactive command-line solver interface
+├── visualize_convergence.py # Convergence curve generator and residual visualizer
+├── hpr_qp.py                # Accelerated First-Order Solvers for CCQP (PEP 484 typed)
 ├── hpr_qp_gpu.py            # GPU-Accelerated PyTorch CSR solver (CUDA / MPS / cuSPARSE)
 ├── hpr_qp_accelerated.py    # Unified Python solver with auto GPU & native C/OpenMP routing
 ├── benchmark_gpu_vs_cpu.py  # Benchmark suite comparing old CPU Python vs GPU PyTorch
@@ -29,15 +36,35 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ├── benchmark_large_python.py # Large-scale CVXQP1_L benchmark in Python
 ├── export_large_dataset.py  # Binary exporter for large-scale cross-language datasets
 ├── benchmark_results.csv    # Evaluated real-world benchmark metrics and KKT residuals
+├── assets/                  # High-resolution architectural and performance graphs
+│   ├── algorithm_architecture.png
+│   ├── performance_comparison.png
+│   ├── cpu_vs_gpu_performance_matrix.png
+│   ├── latency_small_problems.png
+│   └── convergence_curves.png # Dual-panel residual decay: standard vs HPR vs restart
+├── examples/                # Real-world optimization benchmark domains
+│   ├── portfolio_optimization.py # Markowitz mean-variance portfolio allocation
+│   ├── lasso_sparse_regression.py # LASSO regression with singular Hessian
+│   └── svm_dual_qp.py       # Soft-margin Support Vector Machine dual QP
+├── tests/                   # Automated property-based unit test suite
+│   ├── test_hpr_qp_properties.py # Property tests: convex bounds, projection idempotence
+│   └── test_transformer.py # Attention, causal masking, full Transformer tests
 ├── Data/                    # Maros-Meszaros dataset (.mat and fast binary instances)
 │   └── cvxqp1_l.bin         # Binary dataset for CVXQP1_L (n=10,000, m=15,000)
 ├── c/                       # Ultra-low-latency C99 implementation of HPR-QP
+│   ├── CMakeLists.txt       # CMake build targets for C99
+│   ├── Makefile             # POSIX Makefile
+│   ├── opencl_loader.h      # Cross-platform dynamic OpenCL loader header
+│   ├── test_c_unit.c        # C99 unit test harness
 │   ├── hpr_qp.h             # C API header with zero-allocation buffers
 │   ├── hpr_qp.c             # High-performance C solver and verification suite
 │   ├── benchmark_cvxqp1_l.c # High-throughput C benchmark for CVXQP1_L (n=10,000)
 │   ├── benchmark_fast_c.c   # Accelerated C solver (4-way SIMD + OpenMP 8-thread)
 │   └── benchmark_gpu_c.c    # GPU-Accelerated C solver (OpenCL, NVIDIA GeForce MX250)
 ├── cpp/                     # Modern C++20 implementation of HPR-QP
+│   ├── CMakeLists.txt       # CMake build configuration for C++20
+│   ├── opencl_wrapper.hpp   # RAII OpenCLContext and GPUBuffer wrappers
+│   ├── test_cpp_unit.cpp    # C++20 unit test harness
 │   ├── hpr_qp.hpp           # Header-only modern C++ solver class with RAII
 │   ├── hpr_qp.cpp           # C++ verification and benchmark testbed
 │   ├── benchmark_cvxqp1_l.cpp # C++20 benchmark for CVXQP1_L (n=10,000)
@@ -45,10 +72,12 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 │   └── benchmark_gpu_cpp.cpp # GPU-Accelerated C++20 solver (OpenCL RAII, NVIDIA GeForce MX250)
 ├── rust/                    # Memory-safe, zero-cost abstraction Rust crate
 │   ├── Cargo.toml           # Rust package manifest
+│   ├── src/lib.rs           # Reusable library crate root with full rustdocs
 │   ├── src/main.rs          # Pure Rust HPR-QP solver and benchmarks
 │   ├── src/bin/benchmark_cvxqp1_l.rs # Fast CSR Rust runner for CVXQP1_L
 │   ├── src/bin/benchmark_fast_rust.rs # Accelerated 4-way unrolled Rust solver
-│   └── src/bin/benchmark_gpu_rust.rs # GPU-Accelerated Rust solver (OpenCL, NVIDIA GeForce MX250)
+│   ├── src/bin/benchmark_gpu_rust.rs # GPU-Accelerated Rust solver (OpenCL, NVIDIA GeForce MX250)
+│   └── tests/integration_test.rs # Integration test suite for Rust crate
 ├── transformer_scratch.py   # Complete Transformer from scratch in pure PyTorch
 ├── train_copy_task.py       # Autoregressive sequence copy task benchmark & training loop
 ├── README.md                # Project documentation
@@ -393,7 +422,90 @@ Based on comprehensive empirical profiling across all four languages, the answer
 
 ---
 
-## Requirements
-- Python 3.8+
-- PyTorch 2.0+
-- NumPy
+## Part 2: Interactive CLI, Domain Examples & Verification
+
+### Unified Command-Line Interface (`cli.py`)
+Run any benchmark problem from the terminal with configurable parameters, tolerances, and hardware backends:
+
+```bash
+# Solve Hock-Schittkowski Problem 21 on CPU
+python cli.py --problem hs21 --backend cpu --tol 1e-6
+
+# Solve Example 5.1 with Singular Hessian
+python cli.py --problem ex51 --backend cpu --max-iter 1000
+
+# Solve Large-Scale Problem with CUDA acceleration (if GPU available)
+python cli.py --problem cvxqp1_l --backend gpu --max-iter 200
+```
+
+---
+
+### Real-World Domain Applications (`examples/`)
+
+This suite includes practical engineering and machine learning formulations solved via HPR-QP:
+
+1. **Markowitz Portfolio Optimization (`examples/portfolio_optimization.py`)**:
+   - Optimal risk-return capital allocation with 50 assets under budget equality constraint $\sum x_i = 1$ and non-negativity box bounds $x \ge 0$.
+   ```bash
+   python examples/portfolio_optimization.py
+   ```
+2. **Sparse LASSO Regression (`examples/lasso_sparse_regression.py`)**:
+   - $L_1$-regularized feature selection with singular block Gram Hessian solved via restricted Wolfe dual subspace decoupling without matrix inversion.
+   ```bash
+   python examples/lasso_sparse_regression.py
+   ```
+3. **Soft-Margin Support Vector Machine (`examples/svm_dual_qp.py`)**:
+   - Maximum-margin linear classification dual QP with active box constraints $[0, C]$ and hyperplane equality constraint $y^T \alpha = 0$.
+   ```bash
+   python examples/svm_dual_qp.py
+   ```
+
+---
+
+### Theoretical Convergence & Residual Decay Rates
+
+For full mathematical proofs, see [**Mathematical Derivations (MATHEMATICAL_DERIVATION.md)**](MATHEMATICAL_DERIVATION.md).
+
+The Halpern-Peaceman-Rachford method achieves the optimal non-ergodic $\mathcal{O}(1/k^2)$ rate for monotone inclusions. With adaptive restart (Algorithm 8), the solver transitions to accelerated linear convergence:
+
+![Residual Convergence Curves](assets/convergence_curves.png)
+
+```bash
+# Re-generate the convergence plot
+python visualize_convergence.py
+```
+
+---
+
+### Automated Multi-Language Test & Benchmark Runners
+
+Run the entire suite across Python, C99, C++20, and Rust with a single command:
+
+**On Linux / macOS:**
+```bash
+chmod +x run_all_benchmarks.sh
+./run_all_benchmarks.sh
+```
+
+**On Windows (PowerShell):**
+```powershell
+.\run_all_benchmarks.ps1
+```
+
+**Using Docker:**
+```bash
+docker compose up test-suite
+docker compose up benchmark-cli
+```
+
+---
+
+## Requirements & Environment
+- Python 3.10+ (with `torch`, `numpy`, `matplotlib`, `pytest`)
+- C99 & C++20 Compliant Compiler (MSVC 2022+, GCC 11+, or Clang 14+) with OpenMP
+- Rust 1.70+ (`cargo`)
+- OpenCL 1.2+ Runtime (optional for GPU targets)
+
+## License & Citation
+- Licensed under the [MIT License](LICENSE).
+- Citation details available in [CITATION.cff](CITATION.cff).
