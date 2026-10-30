@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  benchmark-cli:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["--problem", "hs21", "--backend", "cpu"]
+
+  benchmark-large:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: ["--problem", "cvxqp1_l", "--backend", "cpu", "--max-iter", "100"]
+
+  test-suite:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    entrypoint: ["pytest"]
+    command: ["tests/", "-v"]
