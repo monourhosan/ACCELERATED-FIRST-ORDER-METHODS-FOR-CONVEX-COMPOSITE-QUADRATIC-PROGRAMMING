@@ -14,7 +14,18 @@ Includes:
 import math
 import time
 import torch
-from typing import Optional, Dict, Tuple
+from typing import Optional, Dict, Tuple, Any, List, Union, TypedDict
+
+
+class HPRQPResult(TypedDict, total=False):
+    x: torch.Tensor
+    s: Optional[torch.Tensor]
+    y: Optional[torch.Tensor]
+    iterations: int
+    runtime: float
+    kkt_res: float
+    history: List[Tuple[int, float]]
+    converged: bool
 
 
 def power_method(A: torch.Tensor, max_iter: int = 50, tol: float = 1e-6) -> float:
@@ -201,7 +212,7 @@ def solve_dual_hpr_qp(
     tol: float = 1e-6,
     sigma: Optional[float] = None,
     restart_freq: int = 64
-) -> Dict[str, any]:
+) -> Dict[str, Any]:
     """
     Solves CCQP via Dual HPR with symmetric Gauss-Seidel (sGS) and Restart (Algorithm 7 & 8):
         min 1/2 <x, Qx> + <c, x> + delta_C(x)
