@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use this software or benchmark suite in your research, please cite it as below."
+authors:
+  - family-names: "Hosan"
+    given-names: "Monour"
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+title: "Accelerated First-Order Methods for Convex Composite Quadratic Programming (HPR-QP)"
+version: 1.0.0
+date-released: 2026-10-30
+url: "https://github.com/monourhosan/ACCELERATED-FIRST-ORDER-METHODS-FOR-CONVEX-COMPOSITE-QUADRATIC-PROGRAMMING"
+preferred-citation:
+  type: article
+  authors:
+    - family-names: "Chen"
+      given-names: "X."
+  title: "Accelerated First Order Methods for Convex Composite Quadratic Programming: Theory, Algorithms, and GPU Implementation"
+  year: 2026
+  journal: "Mathematical Programming / arXiv Preprint"
