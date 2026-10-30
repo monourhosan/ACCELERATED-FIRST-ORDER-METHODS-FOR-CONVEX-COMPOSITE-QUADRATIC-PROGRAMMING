@@ -195,3 +195,32 @@ Evaluated on **`CVXQP1_L`** ($n = 10,000, m = 15,000$, $94,966$ nonzeros):
 | **300 Iterations** | $200.27\text{ ms}$ ($0.668\text{ ms/iter}$) | **$40.22\text{ ms}$** | **$0.134\text{ ms/iter}$** | **$4.98\times$ FASTER** |
 
 *Numerical Consistency*: Both engines reached identical KKT residuals ($5.40 \times 10^0$) and identical objective values ($20,621,190.32$ at 100 iters; $20,672,092.52$ at 300 iters).
+
+---
+
+## 8. C Optimization & GPU Acceleration: Old CPU C vs. New GPU C (OpenCL on NVIDIA MX250)
+
+To take native C execution to maximum hardware performance, we developed a pure C GPU accelerated solver ([`c/benchmark_gpu_c.c`](c/benchmark_gpu_c.c)) utilizing the native OpenCL subsystem (`OpenCL.dll`) targeting the **NVIDIA GeForce MX250 GPU**:
+
+### Architecture of the C GPU Engine
+1. **Dynamic OpenCL Hardware Binding**: Bypasses heavy SDK/toolkit dependencies by dynamically linking `OpenCL.dll` via Windows API (`LoadLibraryA` / `GetProcAddress`), querying device topology and JIT-compiling OpenCL C microcode directly to NVIDIA PTX.
+2. **Massively Parallel Fused GPU Kernels**:
+   - `spmv_csr_kernel`: Parallel CSR SpMV across GPU compute units, parallelizing across row indices.
+   - `fused_step1_2_kernel`: Fused box projection onto $[l_c, u_c]$, Peaceman-Rachford reflection, and $w_{\text{half}}$ update in GPU registers.
+   - `sgs_prep_temp_n_kernel`, `sgs_y_step_kernel`, `sgs_w_step_kernel`: Parallel Symmetric Gauss-Seidel steps.
+   - `halpern_average_kernel`: In-place Halpern convex combination with anchor vectors.
+3. **Zero-PCIe Overhead Iteration Loop (100% VRAM Residency)**:
+   - All sparse matrices ($P, A, A^T$) and 24 working vectors reside persistently in GPU VRAM (`cl_mem`).
+   - Zero PCIe bus transfers occur during the optimization loop; only the final optimal vector $x^*$ is read back to host memory upon convergence.
+
+### Direct Performance Benchmark: Old CPU C vs. New GPU C
+Evaluated on **`CVXQP1_L`** ($n = 10,000, m = 15,000$, $94,966$ nonzeros):
+
+| Iteration Budget | Old Single-Core CPU C (`c/benchmark_cvxqp1_l.c`) | Accelerated 8-Thread CPU C (`c/benchmark_fast_c.c`) | New GPU C on NVIDIA GeForce MX250 (`c/benchmark_gpu_c.c`) | Latency per Iteration (GPU C) | Speedup vs. Old CPU C | Speedup vs. Accelerated CPU C |
+| :---: | :---: | :---: | :---: | :---: | :---: | :---: |
+| **100 Iterations** | $75.08\text{ ms}$ ($0.751\text{ ms/iter}$) | $40.40\text{ ms}$ ($0.404\text{ ms/iter}$) | **$28.41\text{ ms}$** | **$0.284\text{ ms/iter}$** | **$2.64\times$ FASTER** | **$1.42\times$ FASTER** |
+| **300 Iterations** | $257.28\text{ ms}$ ($0.858\text{ ms/iter}$) | $126.44\text{ ms}$ ($0.421\text{ ms/iter}$) | **$81.16\text{ ms}$** | **$0.271\text{ ms/iter}$** | **$3.17\times$ FASTER** | **$1.56\times$ FASTER** |
+
+*Numerical Solution Agreement*: The GPU C solver reached the exact same optimal solution coordinates as CPU C:
+`x*[0..2] = [0.1000, 0.1000, 0.2155]` at 300 iterations.
+

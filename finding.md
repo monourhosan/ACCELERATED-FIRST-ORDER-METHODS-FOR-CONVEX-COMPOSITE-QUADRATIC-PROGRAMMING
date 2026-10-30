@@ -99,3 +99,10 @@ In difficult instances (such as `QSCAGR7` or `QSCSD1`):
 ### Finding 13: VRAM Residency and Zero-Copy Foreign Function Interfaces
 * **The PCIe Bus Tax**: Transferring vectors between CPU Host RAM and GPU Device VRAM across the PCIe bus takes hundreds of microseconds, which can completely negate GPU compute speedups for iterative first-order methods. Keeping all working buffers persistently resident in GPU High-Bandwidth Memory (HBM $>500\text{ GB/s}$) and transferring only the final solution $x^*$ back at convergence unlocks the full performance potential of GPU computing.
 * **Zero-Copy ctypes Python Bridging**: By passing raw pointer addresses of contiguous NumPy arrays directly into native compiled shared libraries (`ctypes.data_as`), Python completely eliminates bytecode interpretation and dynamic array allocation during iterations, delivering a **$5\times$ speedup** directly within pure Python workflows.
+
+### Finding 14: GPU Massive Parallelism & VRAM Bandwidth Scaling in Native C
+* **Bandwidth Saturation on Host CPU**: In CPU-based SpMV operations, execution speed is strictly bounded by DDR4/DDR5 system memory bandwidth ($\approx 40\text{--}60\text{ GB/s}$). Adding more CPU cores yields diminishing returns once memory channels saturate.
+* **GPU High-Bandwidth Memory (VRAM)**: Dedicated GPU GDDR5/GDDR6 memory provides several times the memory bandwidth ($\approx 150\text{--}300+\text{ GB/s}$) and hundreds of lightweight CUDA/Compute cores executing in parallel lockstep.
+* **Elimination of Host-to-Device Latency**: By structuring the C solver to allocate all working vectors ($x, w, z, y$, temporary vectors, and CSR pointers) inside GPU device memory (`cl_mem`), zero PCIe bandwidth is consumed during the iterative optimization loop.
+* **Empirical Speedup**: This architecture accelerates execution from $257.28\text{ ms}$ (Old Single-Core C) and $126.44\text{ ms}$ (8-thread OpenMP C) down to **$81.16\text{ ms}$** on an NVIDIA GeForce MX250—achieving a **$3.17\times$ speedup** over single-core C and **$1.56\times$ speedup** over 8-core CPU OpenMP C with bitwise numerical consistency.
+

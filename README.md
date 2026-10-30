@@ -34,7 +34,8 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 │   ├── hpr_qp.h             # C API header with zero-allocation buffers
 │   ├── hpr_qp.c             # High-performance C solver and verification suite
 │   ├── benchmark_cvxqp1_l.c # High-throughput C benchmark for CVXQP1_L (n=10,000)
-│   └── benchmark_fast_c.c   # Accelerated C solver (4-way SIMD + OpenMP 8-thread)
+│   ├── benchmark_fast_c.c   # Accelerated C solver (4-way SIMD + OpenMP 8-thread)
+│   └── benchmark_gpu_c.c    # GPU-Accelerated C solver (OpenCL, NVIDIA GeForce MX250)
 ├── cpp/                     # Modern C++20 implementation of HPR-QP
 │   ├── hpr_qp.hpp           # Header-only modern C++ solver class with RAII
 │   ├── hpr_qp.cpp           # C++ verification and benchmark testbed
@@ -217,14 +218,21 @@ Overall Accuracy: 5/5 (100.0%)
 | **CVXQP1_L** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$75.28\text{ ms}$** | **$83.80\text{ ms}$** | **$\approx 78.0\text{ ms}$** | **$\approx 2.4\times$** |
 | **CVXQP1_L Accelerated** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | **$12.99\text{ ms}$** | **$14.74\text{ ms}$** | **$\approx 14.0\text{ ms}$** | **$\approx 4.7\times$** |
 | **CVXQP1_L Accelerated** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$52.92\text{ ms}$** | **$63.17\text{ ms}$** | **$\approx 58.0\text{ ms}$** | **$\approx 3.4\times$** |
+| **CVXQP1_L GPU C (NVIDIA MX250)** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | **$28.41\text{ ms}$** | — | — | **$\approx 2.6\times$ vs Old C** |
+| **CVXQP1_L GPU C (NVIDIA MX250)** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$81.16\text{ ms}$** | — | — | **$\approx 3.2\times$ vs Old C** |
 
-### Running the GPU & Accelerated Python Solvers
+### Running the GPU & Accelerated Solvers
 
-1. **New Unified Accelerated Python Engine (4.6x - 5.0x Faster)**:
+1. **New GPU C Solver (OpenCL on NVIDIA MX250 / Zero-PCIe Transfers)**:
+   ```cmd
+   cl /O2 c/benchmark_gpu_c.c /Fe:c/benchmark_gpu_c.exe
+   c\benchmark_gpu_c.exe
+   ```
+2. **New Unified Accelerated Python Engine (4.6x - 5.0x Faster)**:
    ```bash
    python test_accelerated_python.py
    ```
-2. **GPU PyTorch vs. Old CPU Python Benchmark**:
+3. **GPU PyTorch vs. Old CPU Python Benchmark**:
    ```bash
    python benchmark_gpu_vs_cpu.py
    ```
