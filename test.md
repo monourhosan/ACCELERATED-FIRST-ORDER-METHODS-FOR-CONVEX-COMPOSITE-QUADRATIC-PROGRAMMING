@@ -224,3 +224,35 @@ Evaluated on **`CVXQP1_L`** ($n = 10,000, m = 15,000$, $94,966$ nonzeros):
 *Numerical Solution Agreement*: The GPU C solver reached the exact same optimal solution coordinates as CPU C:
 `x*[0..2] = [0.1000, 0.1000, 0.2155]` at 300 iterations.
 
+---
+
+## 9. C++ Optimization & GPU Acceleration: Old CPU C++ vs. New GPU C++ (Modern C++20 on NVIDIA MX250)
+
+To transition C++ execution from host CPU to massive GPU parallelism, we developed [`cpp/benchmark_gpu_cpp.cpp`](cpp/benchmark_gpu_cpp.cpp) combining modern C++20 RAII patterns with the native OpenCL hardware compute pipeline on the **NVIDIA GeForce MX250 GPU**:
+
+### Architecture of Modern C++20 GPU Engine
+1. **Modern C++ RAII Resource Management**:
+   - `OpenCLContext`: RAII encapsulation of hardware platform detection, device binding, and command queue lifecycle.
+   - `GPUBuffer`: Move-constructible RAII wrapper over `cl_mem` managing device VRAM allocations with strict zero-leak guarantees.
+   - `OpenCLLoader`: Type-safe dynamic library loader abstracting runtime hardware calls.
+2. **Persistent VRAM Architecture (Zero PCIe Transfers)**:
+   - All 3 sparse matrices ($P, A, A^T$) and 24 working iterate vectors reside exclusively in dedicated GPU GDDR5 VRAM throughout all iterations.
+   - Iteration state never touches host RAM, completely avoiding PCIe bus bottlenecks.
+3. **Optimized OpenCL C++ JIT Kernels**:
+   - `spmv_csr_kernel`: Parallel SpMV distributing rows across GPU stream processors.
+   - `fused_step1_2_kernel`: Fused box projection $\Pi_{\mathcal{C}}$, reflection $\hat{x}$, and $w_{\text{half}}$ in GPU registers.
+   - `sgs_prep_temp_n_kernel`, `sgs_y_step_kernel`, `sgs_w_step_kernel`: Parallel Symmetric Gauss-Seidel solver passes.
+   - `halpern_average_kernel`: In-place Halpern convex combination with origin anchor vectors.
+
+### Direct Performance Benchmark: Old CPU C++ vs. New GPU C++
+Evaluated on **`CVXQP1_L`** ($n = 10,000, m = 15,000$, $94,966$ nonzeros):
+
+| Iteration Budget | Old Single-Core CPU C++ (`cpp/benchmark_fast_cpp.cpp` baseline) | Accelerated 8-Thread CPU C++ (`cpp/benchmark_fast_cpp.cpp`) | New GPU C++20 on NVIDIA GeForce MX250 (`cpp/benchmark_gpu_cpp.cpp`) | Latency per Iteration (GPU C++) | Speedup vs. Old CPU C++ Baseline |
+| :---: | :---: | :---: | :---: | :---: | :---: |
+| **100 Iterations** | $30.69\text{ ms}$ ($0.307\text{ ms/iter}$) | $10.31\text{ ms}$ ($0.103\text{ ms/iter}$) | **$29.78\text{ ms}$** | **$0.298\text{ ms/iter}$** | **$1.03\times$ faster** |
+| **300 Iterations** | $141.24\text{ ms}$ ($0.471\text{ ms/iter}$) | $42.66\text{ ms}$ ($0.142\text{ ms/iter}$) | **$80.45\text{ ms}$** | **$0.268\text{ ms/iter}$** | **$1.76\times$ FASTER** |
+
+*Numerical Solution Agreement*:
+- **GPU C++ Optimal Solution $x^*[0..2]$ at 300 iters**: `[0.1000, 0.1000, 0.2155]` (exact match with CPU C++ and C).
+
+
