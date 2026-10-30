@@ -116,5 +116,12 @@ In difficult instances (such as `QSCAGR7` or `QSCSD1`):
 * **Type-Safe In-Place GPU Memory Management**: Rust's ownership semantics ensure that host-side vector pointers are safely pinned and mapped into OpenCL host ptr buffers without unsafe memory reallocations.
 * **Exact Multi-Language Latency Invariance**: Across C, C++, and Rust, when all matrices and working vectors reside 100% in GPU VRAM with zero PCIe host-device copy overhead, the execution latency is strictly governed by the GPU silicon's memory bandwidth and arithmetic units ($0.267\text{ ms/iter}$ in Rust vs $0.268\text{ ms/iter}$ in C++ vs $0.271\text{ ms/iter}$ in C). All three languages achieve identical $1.7\times\text{--}3.2\times$ speedups over their respective single-core CPU baselines.
 
+### Finding 17: Multi-Language & Multi-Architecture Performance Pareto Frontier
+* **The "Fastest Language" Is Regime-Dependent**:
+  1. *Small-Scale Latency-Bound ($n \le 100$)*: **Rust, C++, and C tie for first place**, achieving $\approx 6\text{--}12\,\mu\text{s}$ per solve—over **$1,000\times$ faster than Python** by eliminating interpreter dispatch overhead ($5\text{--}15\,\mu\text{s}$ per iteration).
+  2. *Large-Scale Multi-Threaded CPU ($n = 10,000$)*: **Compiled C/C++ with 8-Thread OpenMP & AVX2 SIMD wins**, reaching $40.22\text{--}42.66\text{ ms}$ ($0.134\text{ ms/iter}$)—a **$4.44\times$ speedup** over the single-threaded Python baseline by saturating multi-core memory bandwidth with interleaved accumulators.
+  3. *Massively Parallel GPU ($n = 10,000$)*: **Rust, C++, and C achieve hardware silicon parity at $\approx 80\text{ ms}$ ($0.267\text{--}0.271\text{ ms/iter}$)** on the NVIDIA GeForce MX250. Rust marginally records the fastest single run ($80.05\text{ ms}$), demonstrating that Rust's zero-cost abstraction delivers identical peak silicon performance to hand-tuned C and C++.
+
+
 
 
