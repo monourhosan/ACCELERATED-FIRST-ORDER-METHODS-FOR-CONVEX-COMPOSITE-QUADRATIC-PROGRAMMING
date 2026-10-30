@@ -330,6 +330,33 @@ static RunStats run_hpr_qp(const LargeDataset *ds, int max_iter, int restart_fre
     return stats;
 }
 
+__declspec(dllexport) int solve_hpr_qp_fast_c_api(
+    uint32_t n, uint32_t m,
+    const int32_t *P_row_ptr, const int32_t *P_col_idx, const double *P_val, uint64_t nnz_P,
+    const int32_t *A_row_ptr, const int32_t *A_col_idx, const double *A_val, uint64_t nnz_A,
+    const int32_t *AT_row_ptr, const int32_t *AT_col_idx, const double *AT_val, uint64_t nnz_AT,
+    const double *c, const double *l_k, const double *u_k, const double *l_c, const double *u_c,
+    int max_iter, int restart_freq, double tol,
+    double *x_out, double *stats_out // [elapsed_ms, kkt_res, obj]
+) {
+    LargeDataset ds;
+    ds.n = n; ds.m = m;
+    ds.nnz_P = nnz_P; ds.nnz_A = nnz_A; ds.nnz_AT = nnz_AT;
+    ds.P_row_ptr = (int32_t*)P_row_ptr; ds.P_col_idx = (int32_t*)P_col_idx; ds.P_val = (double*)P_val;
+    ds.A_row_ptr = (int32_t*)A_row_ptr; ds.A_col_idx = (int32_t*)A_col_idx; ds.A_val = (double*)A_val;
+    ds.AT_row_ptr = (int32_t*)AT_row_ptr; ds.AT_col_idx = (int32_t*)AT_col_idx; ds.AT_val = (double*)AT_val;
+    ds.c = (double*)c; ds.l_k = (double*)l_k; ds.u_k = (double*)u_k; ds.l_c = (double*)l_c; ds.u_c = (double*)u_c;
+
+    RunStats s = run_hpr_qp(&ds, max_iter, restart_freq, 1);
+    if (stats_out) {
+        stats_out[0] = s.elapsed_ms;
+        stats_out[1] = s.kkt_residual;
+        stats_out[2] = s.objective;
+    }
+    return 0;
+}
+
+#ifndef HPR_QP_DLL_ONLY
 int main(void) {
     printf("======================================================================\n");
     printf("  OPTIMIZED HPR-QP BENCHMARK: BASELINE vs. ACCELERATED (C99 + OpenMP)\n");
@@ -366,3 +393,4 @@ int main(void) {
     free_dataset(ds);
     return 0;
 }
+#endif

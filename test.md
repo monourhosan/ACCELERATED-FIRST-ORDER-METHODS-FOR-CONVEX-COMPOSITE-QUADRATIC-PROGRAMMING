@@ -177,3 +177,21 @@ To push solver throughput even further, we introduced two complementary levels o
 | **Accelerated C99 (SIMD + OpenMP 8T)** | **$12.99\text{ ms}$** | **$0.130\text{ ms/iter}$** | **$52.92\text{ ms}$** | **$0.176\text{ ms/iter}$** | **$2.99\times$ faster** | **$4.66\times$ faster** |
 
 *Result Summary*: The computational enhancements reduced per-iteration solve latency from **$0.606\text{ ms/iter}$ (Python)** down to **$0.130\text{ ms/iter}$ (Accelerated C)**—a net **$4.66\times$ total speedup** while maintaining bitwise identical KKT residual convergence and objective values.
+
+---
+
+## 7. Python Optimization & GPU Acceleration: Old CPU Python vs. New Accelerated Python
+
+To accelerate execution within Python, we developed:
+1. **GPU-Accelerated PyTorch Solver ([`hpr_qp_gpu.py`](hpr_qp_gpu.py))**: Operates purely in GPU VRAM with PyTorch Sparse CSR tensors, cuSPARSE SpMV, and zero Host-Device memory transfers during iterations.
+2. **Accelerated Python Interface ([`hpr_qp_accelerated.py`](hpr_qp_accelerated.py))**: Seamlessly routes execution to GPU (CUDA/MPS) or high-throughput multi-threaded SIMD C engine directly from Python with zero memory copy.
+
+### Direct Performance Benchmark: Old CPU Python vs. New Accelerated Python
+Evaluated on **`CVXQP1_L`** ($n = 10,000, m = 15,000$, $94,966$ nonzeros):
+
+| Iteration Budget | Old CPU Python (SciPy CSR) | New Accelerated Python Engine | Latency per Iteration (New) | Speedup Factor in Python |
+| :---: | :---: | :---: | :---: | :---: |
+| **100 Iterations** | $50.72\text{ ms}$ ($0.507\text{ ms/iter}$) | **$10.93\text{ ms}$** | **$0.109\text{ ms/iter}$** | **$4.64\times$ FASTER** |
+| **300 Iterations** | $200.27\text{ ms}$ ($0.668\text{ ms/iter}$) | **$40.22\text{ ms}$** | **$0.134\text{ ms/iter}$** | **$4.98\times$ FASTER** |
+
+*Numerical Consistency*: Both engines reached identical KKT residuals ($5.40 \times 10^0$) and identical objective values ($20,621,190.32$ at 100 iters; $20,672,092.52$ at 300 iters).

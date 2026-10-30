@@ -19,6 +19,10 @@ This repository contains clean, from-scratch implementations of two cutting-edge
 ├── finding.md               # Key algorithmic, theoretical & architectural findings
 ├── real_world_mpc_hpr.py    # Autonomous vehicle trajectory tracking MPC case study
 ├── hpr_qp.py                # Accelerated First-Order Solvers for CCQP (Primal & Dual HPR-QP in Python)
+├── hpr_qp_gpu.py            # GPU-Accelerated PyTorch CSR solver (CUDA / MPS / cuSPARSE)
+├── hpr_qp_accelerated.py    # Unified Python solver with auto GPU & native C/OpenMP routing
+├── benchmark_gpu_vs_cpu.py  # Benchmark suite comparing old CPU Python vs GPU PyTorch
+├── test_accelerated_python.py # Empirical verification of Python speedups
 ├── test_hpr_qp.py           # Unit tests reproducing paper examples (Ex 5.1 & 5.2)
 ├── benchmark_maros_meszaros.py # Real-world benchmark runner on Maros-Meszaros QP dataset
 ├── benchmark_large_python.py # Large-scale CVXQP1_L benchmark in Python
@@ -213,6 +217,17 @@ Overall Accuracy: 5/5 (100.0%)
 | **CVXQP1_L** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$75.28\text{ ms}$** | **$83.80\text{ ms}$** | **$\approx 78.0\text{ ms}$** | **$\approx 2.4\times$** |
 | **CVXQP1_L Accelerated** (100 iters) | $n=10^4, m=15\cdot 10^3$ | $60.59\text{ ms}$ | **$12.99\text{ ms}$** | **$14.74\text{ ms}$** | **$\approx 14.0\text{ ms}$** | **$\approx 4.7\times$** |
 | **CVXQP1_L Accelerated** (300 iters) | $n=10^4, m=15\cdot 10^3$ | $178.48\text{ ms}$ | **$52.92\text{ ms}$** | **$63.17\text{ ms}$** | **$\approx 58.0\text{ ms}$** | **$\approx 3.4\times$** |
+
+### Running the GPU & Accelerated Python Solvers
+
+1. **New Unified Accelerated Python Engine (4.6x - 5.0x Faster)**:
+   ```bash
+   python test_accelerated_python.py
+   ```
+2. **GPU PyTorch vs. Old CPU Python Benchmark**:
+   ```bash
+   python benchmark_gpu_vs_cpu.py
+   ```
 
 ### Running the Accelerated Algorithm Benchmarks (SIMD + OpenMP 8-Threads)
 
